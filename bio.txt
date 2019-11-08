@@ -1,0 +1,1 @@
+This project is heavily based into the image analysis of landmasses, along with finding the most fertile areas in a given landmass

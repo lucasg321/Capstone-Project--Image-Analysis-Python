@@ -1,108 +1,99 @@
 import numpy as np
 import cv2
+import logging 
+np.seterr(divide='ignore', invalid='ignore')  
+#Create and configure logger 
+logging.basicConfig(filename="newfile.log", 
+                    format='%(asctime)s %(message)s', 
+                    filemode='w') 
+  
+#Creating an object 
+logger=logging.getLogger() 
+  
+#Setting the threshold of logger to DEBUG 
+logger.setLevel(logging.DEBUG) 
 
-image = cv2.imread('droneviewoffarmland.jpg') #load the image that the analysis should be done on
-original = image.copy()
-image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV) #change the image to type HSV for better results in opencv
-lower = np.array([18, 240, 250], dtype="uint8") #declare the lower range of the shade to test for
-upper = np.array([20, 255, 255], dtype="uint8") #declare the upper range of the shade to test for
+image = cv2.imread('Images/Uw2-91s.jpg') #load the image that the analysis should be done on
 
-mask = cv2.inRange(image, lower, upper) #inRange function turns all pixels in the image in the defined range to black
+#BGR value extraction taking the average pixel values from an image
+rgbExtraction1 = cv2.imread('Images/light-soilbin.jpg'); #27.23628093 47.27746177 66.95177992 - 91 [60.63844851 54.92196398 78.35154687]
+avg_color_per_row = np.average(rgbExtraction1, axis=0)    #64.52385635 104.4465545  132.43190441 - 41
+avg_color = np.average(avg_color_per_row, axis=0)
+print(avg_color)
+#another way to do the same thing - extract rgb values and average over the array/image
+#array = ([[[ 0.,  0.,  0.],
+#        [ 0.,  0.,  0.]],
 
-cv2.imshow('original', original) #show image
-cv2.imshow('mask', mask) # show new masked image
+#       [[ 1.,  1.,  1.],
+#        [ 1.,  1.,  1.]]])
 
-image[mask>0]=(0,0,255)  #turns all the previously black pixels into red
-
-cv2.imshow("result.png",image) # shows the new image with red in it
-
-#cv2.waitKey()
-
-hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-
-lower1 = np.array([10, 0, 0])
-upper1 = np.array([20, 255, 255])
-
-mask=cv2.inRange(hsv,lower1,upper1)
-
-cv2.imshow('original', original)
-cv2.imshow('mask', mask)
-
-image[mask>0]=(0,0,255)
-
-cv2.imshow("result2.png",image)
-
-cv2.waitKey()
-
-#brown_mask = cv2.inRange(hsv, lower, upper)
-
-#(contours,_) = cv2.findContours(brown_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-#for contour in contours:
-#    area = cv2.contourArea(contour)
-
-#    if(area > 800):
-#        x,y,w,h = cv2.boundingRect(contour)
-#        image = cv2.rectangle(image, (x,y),(x+w,y+h),(0,0,255),10)
-#        cv2.imshow('tracking', image)
-#        k=cv2.waitKey(5) & 0xFF
-#        if k == 27:
-#            break
-
-#cv2.destroyAllWindows()
-
-
-#points= cv2.findnonzero(mask)
-
-#avg = np.mean(points, axis=0)
-
+#avg = np.mean(array, axis=(0, 1))
 #print(avg)
 
-#resimage = [640, 480]
-#resscreen = [1920, 1080]
+#finding 20x20 blocks of pixels that average to a specific rgb value and changing those pixels to red
+rows,cols,channels = image.shape;
+i=0
+j=0
+rgbExtraction = cv2.imread('Images/soilbin.jpg');
+rgbMask = cv2.imread('Images/soilbin.jpg'); 
+while(i<899):
+    j=0;
+    while(j<642):
+        try:
+            #with warnings.catch_warnings():
+                #warnings.simplefilter("ignore", category=RuntimeWarning)
+                avg_color_per_row = np.average(rgbExtraction[i:i+100,j:j+100], axis=0)  
+                avg_color = np.average(avg_color_per_row, axis=0)
+        except:
+            logger.info('Got exception on main handler')
+        
+        #check if matches uw2-42 avg rgb color
+        if (avg_color[0] >= 64 and avg_color[1] >= 104 and avg_color[2] >= 132) and (avg_color[0] <= 66 and avg_color[1] <= 106 and avg_color[2] <= 134):
+            try:
+                print(avg_color)
+                rgbMask[i:i+100,j:j+100] = rgbMask[i:i+100,j:j+100] + [0, 0, 122]
+            except:
+                logger.info('Got exception on main handler')
+            #rgbMask[i:i+20,i:i+20] = rgbMask[i:i+20,i:i+20] + [0, 0, 255]
+            #i += 100
+        #check if matches uw2-42 avg rgb color
+        if (avg_color[0] >= 61 and avg_color[1] >= 101 and avg_color[2] >= 128) and (avg_color[0] <= 63 and avg_color[1] <= 103 and avg_color[2] <= 131):
+            try:
+                print(avg_color)
+                rgbMask[i:i+100,j:j+100] = rgbMask[i:i+100,j:j+100] + [0, 0, 122]
+            except:
+                logger.info('Got exception on main handler')
+            #rgbMask[i:i+20,i:i+20] = rgbMask[i:i+20,i:i+20] + [0, 0, 200]
+            #i += 100
+        if (avg_color[0] >= 18 and avg_color[1] >= 19 and avg_color[2] >= 30) and (avg_color[0] <= 20 and avg_color[1] <= 21 and avg_color[2] <= 33):
+            try:
+                print(avg_color)
+                rgbMask[i:i+100,j:j+100] = rgbMask[i:i+100,j:j+100] + [0, 0, 122]
+            except:
+                logger.info('Got exception on main handler')
+                #[60.63844851 54.92196398 78.35154687]
+        if (avg_color[0] >= 59 and avg_color[1] >= 53 and avg_color[2] >= 77) and (avg_color[0] <= 61 and avg_color[1] <= 56 and avg_color[2] <= 79):
+            try:
+                print(avg_color)
+                rgbMask[i:i+100,j:j+100] = rgbMask[i:i+100,j:j+100] + [0, 0, 122]
+            except:
+                logger.info('Got exception on main handler')
+               # 34.21031746 48.14484127 69.65065193
+        if (avg_color[0] >= 32 and avg_color[1] >= 47 and avg_color[2] >= 68) and (avg_color[0] <= 35 and avg_color[1] <= 50 and avg_color[2] <= 71):
+            try:
+                print(avg_color)
+                rgbMask[i:i+100,j:j+100] = rgbMask[i:i+100,j:j+100] + [0, 0, 122]
+            except:
+                logger.info('Got exception on main handler')
+            #rgbMask[i:i+20,i:i+20] = rgbMask[i:i+20,i:i+20] + [0, 0, 200]
+            #i += 100
+        #if (avg_color[0] >= 0 and avg_color[1] >= 0 and avg_color[2] >= 0) and (avg_color[0] <= 255 and avg_color[1] <= 255 and avg_color[2] <= 255):
+        #    print(avg_color)
+        #    rgbMask[i:i+100,j:j+100] = rgbMask[i:i+100,j:j+100] + [0, 0, 122]
+        #    #rgbMask[i:i+20,i:i+20] = rgbMask[i:i+20,i:i+20] + [0, 0, 200]
+        #    #i += 100
+        j+=1
+    i += 1;
+cv2.imshow('Select Mask', rgbMask)
 
-## points are in x,y coordinates
-#pointinscreen = ((resscreen[0] / resimage[0]) * avg[0], (resscreen[1] / resimage[1]) * avg[1] )
-
-
-#kernel = cv2.getstructuringelement(cv2.morph_rect, (3,3))
-#opening = cv2.morphologyex(mask, cv2.morph_open, kernel, iterations=1)
-
-#cnts = cv2.findcontours(opening, cv2.retr_external, cv2.chain_approx_simple)
-#cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-
-#area = 0
-#for c in cnts:
-#    area += cv2.contourarea(c)
-#    cv2.drawcontours(original,[c], 0, (0,0,0), 2)
-
-#aftermask = np.where(mask == 255)
-
-#listi = []    #---stores coordinate corresponding to height of the image
-#listj = []    #---stores coordinate corresponding to width of the image
-
-#for i in range(0, mask.shape[0]):
-#    for j in range(0, mask.shape[1]):
-#        if(mask[i, j] == 255):
-#            listi = np.append(listi, i)
-#            listj = np.append(listj, j)
-#            #print(listi, listj)
-
-
-#coord = cv2.findnonzero(mask)
-##cv2.circle(mask,coord, 5, (0,255,0), -1)
-#print(coord)
-#coord = 255;
-#print(np.transpose(mask.nonzero()))
-
-#print(aftermask)
-#coordinates = zip(aftermask[0], aftermask[1])
-#print (coordinates)
-#np.asarray(coordinates)
-#print(coordinates)
-
-#print(area)
-#cv2.imshow('mask', mask)
-#cv2.imshow('original', original)
-#cv2.imshow('opening', opening)
-#cv2.waitkey()
+cv2.waitKey()

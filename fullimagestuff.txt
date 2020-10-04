@@ -1,0 +1,174 @@
+import numpy as np
+import cv2
+
+image = cv2.imread('Images/Uw2-91s.jpg') #load the image that the analysis should be done on
+
+#BGR value extraction taking the average pixel values from an image
+rgbExtraction1 = cv2.imread('Images/Uw2-42-cropped.jpg'); #27.23628093 47.27746177 66.95177992 - 91
+avg_color_per_row = np.average(rgbExtraction1, axis=0)    #64.52385635 104.4465545  132.43190441 - 41
+avg_color = np.average(avg_color_per_row, axis=0)
+print(avg_color)
+#another way to do the same thing - extract rgb values and average over the array/image
+array = ([[[ 0.,  0.,  0.],
+        [ 0.,  0.,  0.]],
+
+       [[ 1.,  1.,  1.],
+        [ 1.,  1.,  1.]]])
+
+avg = np.mean(array, axis=(0, 1))
+print(avg)
+
+original = image.copy()
+image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV) #change the image to type HSV for better results in opencv
+lower1 = np.array([64.52385635, 104.4465545, 132.43190441], dtype="uint8") #declare the lower range of the shade to test for
+upper1 = np.array([64.52385636, 104.4465546, 132.43190442], dtype="uint8") #declare the upper range of the shade to test for
+lower = np.array([64.52385635, 104.4465545, 132.43190441], dtype="uint8") #declare the lower range of the shade to test for
+upper = np.array([64.52385636, 104.4465546, 132.43190442], dtype="uint8") #declare the upper range of the shade to test for
+#int colorsLength = 10;
+
+
+#finding 100x100 blocks of pixels that average to a specific rgb value and changing those pixels to red
+rows,cols,channels = image.shape;
+i=0
+rgbExtraction = cv2.imread('Images/Uw2-42s.jpg');
+rgbMask = cv2.imread('Images/Uw2-42s.jpg'); 
+while(i<rows-20 and i<cols-20):
+    avg_color_per_row = np.average(rgbExtraction[i:i+20,i:i+20], axis=0)  
+    avg_color = np.average(avg_color_per_row, axis=0)
+    if (avg_color[0] >= 64 and avg_color[1] >= 104 and avg_color[2] >= 132) and (avg_color[0] <= 66 and avg_color[1] <= 106 and avg_color[2] <= 134):
+        print(avg_color)
+        rgbMask[i:i+100,i:i+100] = [0, 0, 255]
+        rgbMask[i:i+20,i:i+20] = [0, 0, 255]
+        #print(rgbMask[0:100,0:100])
+        #j = i;
+        #while (j<i+100):
+        #    x = i;
+        #    while (x<i+100):
+        #        rgbMask[j,x] = [0,0,255];
+        #        x += 1
+        #    j += 1
+    #print(avg_color)
+        #print(rgbMask[0:100,0:100])
+    i += 1;
+cv2.imshow('Select Mask', rgbMask)
+
+#p = 25;
+
+#for i in range(15):
+#    a = 0
+#    for x in range(0, 15):
+#        a += image[i, x]
+
+##b=a/225;
+#print(a)
+
+
+#for i in range(rows-25):
+#    for j in range(cols-10):
+#        for l in range(p):
+#            k = (image[i+l,j] + image[i+l,j+1] + image[i+l,j+2] + image[i+l,j+3] + image[i+l,j+4] + image[i+l,j+5] + image[i+l,j+6] + image[i+l,j+7] + image[i+l,j+8] 
+#            + image[i+l,j+9] + image[i+l,j+10])/250
+#       # if np.array_equal([64, 104, 132], k) or np.array_equal([65, 105, 133], k):
+#            print(k)
+
+mask = cv2.inRange(image, lower, upper) #inRange function turns all pixels in the image in the defined range to black
+
+cv2.imshow('original', original) #show image
+#cv2.imshow('mask', mask) # show new masked image
+
+image[mask>0]=(0,0,255)  #turns all the previously black pixels into red
+
+cv2.imshow("result.png",image) # shows the new image with red in it
+
+#cv2.waitKey()
+
+hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+#lower1 = np.array([10, 0, 0])
+#upper1 = np.array([20, 255, 255])
+
+#for(int i = 0;i<colorsLength;i++){}
+
+mask=cv2.inRange(hsv,lower1,upper1)
+
+cv2.imshow('original', original)
+#cv2.imshow('mask', mask)
+
+image[mask>0]=(0,0,255) #turn all of the white in the image that was previosuly masked, into red -- this will be a red gradient in the future depending on the brown that was detected
+
+cv2.imshow("result2.png",image)
+
+cv2.waitKey()
+
+#brown_mask = cv2.inRange(hsv, lower, upper)
+
+#(contours,_) = cv2.findContours(brown_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+#for contour in contours:
+#    area = cv2.contourArea(contour)
+
+#    if(area > 800):
+#        x,y,w,h = cv2.boundingRect(contour)
+#        image = cv2.rectangle(image, (x,y),(x+w,y+h),(0,0,255),10)
+#        cv2.imshow('tracking', image)
+#        k=cv2.waitKey(5) & 0xFF
+#        if k == 27:
+#            break
+
+#cv2.destroyAllWindows()
+
+
+#points= cv2.findnonzero(mask)
+
+#avg = np.mean(points, axis=0)
+
+#print(avg)
+
+#resimage = [640, 480]
+#resscreen = [1920, 1080]
+
+## points are in x,y coordinates
+#pointinscreen = ((resscreen[0] / resimage[0]) * avg[0], (resscreen[1] / resimage[1]) * avg[1] )
+
+
+#kernel = cv2.getstructuringelement(cv2.morph_rect, (3,3))
+#opening = cv2.morphologyex(mask, cv2.morph_open, kernel, iterations=1)
+
+#cnts = cv2.findcontours(opening, cv2.retr_external, cv2.chain_approx_simple)
+#cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+
+#area = 0
+#for c in cnts:
+#    area += cv2.contourarea(c)
+#    cv2.drawcontours(original,[c], 0, (0,0,0), 2)
+
+#aftermask = np.where(mask == 255)
+
+#listi = []    #---stores coordinate corresponding to height of the image
+#listj = []    #---stores coordinate corresponding to width of the image
+
+#for i in range(0, mask.shape[0]):
+#    for j in range(0, mask.shape[1]):
+#        if(mask[i, j] == 255):
+#            listi = np.append(listi, i)
+#            listj = np.append(listj, j)
+#            #print(listi, listj)
+
+
+#coord = cv2.findnonzero(mask)
+##cv2.circle(mask,coord, 5, (0,255,0), -1)
+#print(coord)
+#coord = 255;
+#print(np.transpose(mask.nonzero()))
+
+#print(aftermask)
+#coordinates = zip(aftermask[0], aftermask[1])
+#print (coordinates)
+#np.asarray(coordinates)
+#print(coordinates)
+
+#print(area)
+#cv2.imshow('mask', mask)
+#cv2.imshow('original', original)
+#cv2.imshow('opening', opening)
+#cv2.waitkey()
